@@ -8,19 +8,20 @@ const { pk2id } = require('../util')
 const KBucket = require('./kbucket')
 const BanList = require('./ban-list')
 const DPTServer = require('./server')
+const ENR = require('./ern')
 
 const debug = createDebugLogger('devp2p:dpt')
 
 class DPT extends EventEmitter {
   constructor (privateKey, options) {
     super()
-
     this._privateKey = Buffer.from(privateKey)
     this._id = pk2id(secp256k1.publicKeyCreate(this._privateKey, false))
-
     this._banlist = new BanList()
-
     this._kbucket = new KBucket(this._id)
+
+    this._enr = new ENR(this._id, this._privateKey)
+
     this._kbucket.on('added', (peer) => this.emit('peer:added', peer))
     this._kbucket.on('removed', (peer) => this.emit('peer:removed', peer))
     this._kbucket.on('ping', (...args) => this._onKBucketPing(...args))
